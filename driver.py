@@ -35,23 +35,30 @@ class SimplePV(pcaspy.driver.SimplePV):
 		self.name = name
 		self.info = info
 		self.create_pv()
-	def scan(self):
-		print("SCANNING")
-		pass
+	#def scan(self):
+	#	print("SCANNING")
+	#	pass
 	def updateValue(self, dbValue):
-		print("dbvalue", dbValue)
+		super().updateValue(dbValue)
+		#print("dbvalue", dbValue)
+		value = dbValue.value
+		#pvs = pcaspy.driver.manager.pvs[self.port]
+		#pvs[reason].pv.set(value)
+		self.pv.set(value)
 
 pcaspy.driver.SimplePV = SimplePV
 
 #from pcaspy import Driver
 class Driver(pcaspy.driver.Driver):
-	def setParam(self, reason, value, timestamp=None):
-		super().setParam(reason, value, timestamp)
-		value = self.pvDB[reason].value
-		pvs = pcaspy.driver.manager.pvs[self.port]
-		pvs[reason].pv.set(value)
+	pass
+	#def setParam(self, reason, value, timestamp=None):
+	#	super().setParam(reason, value, timestamp)
+	#	value = self.pvDB[reason].value
+	#	pvs = pcaspy.driver.manager.pvs[self.port]
+	#	pvs[reason].pv.set(value)
 
 class SimpleServer(pcaspy.driver.SimpleServer):
-	def process(self, val):
-		time.sleep(val)
-		pass
+	pass
+#	def process(self, val):
+#		time.sleep(val)
+#		pass
