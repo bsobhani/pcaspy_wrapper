@@ -32,8 +32,6 @@ class SimplePV(pcaspy.driver.SimplePV):
 	
 	def __init__(self, name, info):
 		super().__init__(name, info)
-		self.name = name
-		self.info = info
 		self.create_pv()
 	def updateValue(self, dbValue):
 		super().updateValue(dbValue)
