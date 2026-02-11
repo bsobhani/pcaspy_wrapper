@@ -1,10 +1,21 @@
-import pvaccess
 import pcaspy
-import pvapy
 import time
+try:
+	import pvaccess
+	import pvapy
+except:
+	None
+try:
+	from p4p.server import StaticProvider
+	from p4p.server import Server as ServerP4P
+	from p4p.server.thread import SharedPV
+	from p4p.nt import NTScalar
+except:
+	None
 
 
-server = pvaccess.PvaServer()
+
+server = None
 
 class SimplePV(pcaspy.driver.SimplePV):
 	def get_reason(self):
@@ -48,18 +59,6 @@ class SimplePV(pcaspy.driver.SimplePV):
 			self.set_array(value)
 		else:
 			self.pv.set(value)
-
-
-import time
-from p4p.server import StaticProvider
-from p4p.server import Server as ServerP4P
-from p4p.server.thread import SharedPV
-from p4p.nt import NTScalar
-import pcaspy
-
-
-provider = StaticProvider('simple')
-serverp4p = ServerP4P(providers=[provider])
 
 
 class SimplePVP4P(pcaspy.driver.SimplePV):
@@ -136,10 +135,26 @@ class SimplePVP4P(pcaspy.driver.SimplePV):
 			self.pv.post(wrapped_value)
 
 #pcaspy.driver.SimplePV = SimplePV
-pcaspy.driver.SimplePV = SimplePVP4P
-server = serverp4p
+#pcaspy.driver.SimplePV = SimplePVP4P
 
+def use_pvapy():
+	global server
+	server = pvaccess.PvaServer()
+	pcaspy.driver.SimplePV = SimplePV
 
+provider = None
+def use_p4p():
+	global server
+	global provider
+	provider = StaticProvider('simple')
+	server = ServerP4P(providers=[provider])
+	pcaspy.driver.SimplePV = SimplePVP4P
+
+try:
+	use_p4p()
+except:
+	print("p4p not found, trying pvapy")
+	use_pvapy()
 
 class Driver(pcaspy.driver.Driver):
 	pass
