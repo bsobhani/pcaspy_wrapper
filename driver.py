@@ -16,6 +16,7 @@ except:
 
 
 server = None
+_ait_d = pcaspy.driver._ait_d
 
 class SimplePV(pcaspy.driver.SimplePV):
 	def get_reason(self):
@@ -27,7 +28,6 @@ class SimplePV(pcaspy.driver.SimplePV):
 	def create_pv(self):
 		t_num = self.info.type
 		count = self.info.count
-		_ait_d = pcaspy.driver._ait_d
 		if t_num == _ait_d["str"]:
 			self.pv = pvapy.PvString()
 		elif t_num == _ait_d["float"]:
@@ -36,14 +36,18 @@ class SimplePV(pcaspy.driver.SimplePV):
 			else:
 				self.pv = pvapy.PvFloat()
 		elif t_num == _ait_d["char"]:
-			#self.pv = pvapy.PvScalarArray(pvapy.INT)
-			self.pv = pvapy.PvString()
+			if count > 1:
+				self.pv = self.create_array(pvapy.BYTE)
+			else:
+				#self.pv = pvapy.PvString()
+				self.pv = pvapy.PvInt()
 		elif t_num == _ait_d["int"]:
 			self.pv = pvapy.PvInt()
 		elif t_num == _ait_d["short"]:
 			self.pv = pvapy.PvInt()
 		elif t_num == _ait_d["enum"]:
-			self.pv = pvapy.PvInt()
+			#self.pv = pvapy.PvInt()
+			self.pv = pvapy.PvEnum()
 		def cb(pv):
 			driver = pcaspy.driver.manager.driver.get(self.info.port)
 			driver.write(self.get_reason(), pv["value"])
@@ -55,8 +59,13 @@ class SimplePV(pcaspy.driver.SimplePV):
 	def updateValue(self, dbValue):
 		super().updateValue(dbValue)
 		value = dbValue.value
-		if type(value)!=str and hasattr(value, "__len__"):
+		#if type(value)!=str and hasattr(value, "__len__"):
+		if self.info.type!=_ait_d["str"] and hasattr(value, "__len__"):
 			self.set_array(value)
+		elif self.info.type == _ait_d["enum"]:
+			print("setting choices to ", self.info.enums)
+			self.pv.setChoices(self.info.enums)
+			self.pv.setIndex(value)
 		else:
 			self.pv.set(value)
 
@@ -80,7 +89,8 @@ class SimplePVP4P(pcaspy.driver.SimplePV):
 				return NTScalar('af')
 			return NTScalar('f')
 		elif t_num == _ait_d["char"]:
-			return NTScalar('s')
+			#return NTScalar('s')
+			return NTScalar('aB')
 		elif t_num == _ait_d["int"]:
 			return NTScalar('i')
 		elif t_num == _ait_d["short"]:
@@ -95,7 +105,7 @@ class SimplePVP4P(pcaspy.driver.SimplePV):
 		nt = self._make_nt()
 		self.nt = nt
 		print(self.info.name, self.info.type, self.info.count, _ait_d)
-		if self.info.type == _ait_d["str"] or self.info.type == _ait_d["char"]:
+		if self.info.type == _ait_d["str"]:
 			initial = self.nt.wrap("")
 		elif self.info.count > 1:
 			initial = self.nt.wrap([])
@@ -126,8 +136,11 @@ class SimplePVP4P(pcaspy.driver.SimplePV):
 		super().updateValue(dbValue)
 		value = dbValue.value
 
-		if type(value) != str and hasattr(value, "__len__"):
+		#if type(value) != str and hasattr(value, "__len__"):
+		if self.info.type!=_ait_d["str"] and hasattr(value, "__len__"):
 			#self.pv.post(self.nt.wrap({'value': list(value)}))
+			if type(value)==str:
+				value = [ord(e) for e in value]
 			wrapped_value = self.nt.wrap(list(value))
 			self.pv.post(wrapped_value)
 		else:
@@ -141,6 +154,7 @@ def use_pvapy():
 	global server
 	server = pvaccess.PvaServer()
 	pcaspy.driver.SimplePV = SimplePV
+	print("using pvapy")
 
 provider = None
 def use_p4p():
@@ -149,6 +163,7 @@ def use_p4p():
 	provider = StaticProvider('simple')
 	server = ServerP4P(providers=[provider])
 	pcaspy.driver.SimplePV = SimplePVP4P
+	print("using p4p")
 
 try:
 	use_p4p()
