@@ -34,20 +34,26 @@ class SimplePV(pcaspy.driver.SimplePV):
 			if count > 1:
 				self.pv = self.create_array(pvapy.FLOAT)
 			else:
-				self.pv = pvapy.PvFloat()
+				#self.pv = pvapy.PvFloat()
+				self.pv = pvapy.NtScalar(pvapy.FLOAT)
 		elif t_num == _ait_d["char"]:
 			if count > 1:
 				self.pv = self.create_array(pvapy.BYTE)
 			else:
 				#self.pv = pvapy.PvString()
-				self.pv = pvapy.PvInt()
+				#self.pv = pvapy.PvInt()
+				self.pv = pvapy.NtScalar(pvapy.INT)
 		elif t_num == _ait_d["int"]:
-			self.pv = pvapy.PvInt()
+			#self.pv = pvapy.PvInt()
+			self.pv = pvapy.NtScalar(pvapy.INT)
 		elif t_num == _ait_d["short"]:
-			self.pv = pvapy.PvInt()
+			#self.pv = pvapy.PvInt()
+			self.pv = pvapy.NtScalar(pvapy.INT)
 		elif t_num == _ait_d["enum"]:
 			#self.pv = pvapy.PvInt()
-			self.pv = pvapy.PvEnum()
+			#self.pv = pvapy.PvEnum()
+			#self.pv = pvapy.NtScalar(pvapy.ENUM)
+			self.pv = pvapy.NtEnum()
 		def cb(pv):
 			driver = pcaspy.driver.manager.driver.get(self.info.port)
 			driver.write(self.get_reason(), pv["value"])
@@ -60,14 +66,27 @@ class SimplePV(pcaspy.driver.SimplePV):
 		super().updateValue(dbValue)
 		value = dbValue.value
 		#if type(value)!=str and hasattr(value, "__len__"):
-		if self.info.type!=_ait_d["str"] and hasattr(value, "__len__"):
+		#if self.info.type!=_ait_d["str"] and hasattr(value, "__len__"):
+		if self.info.type==_ait_d["str"]:
+			self.pv.set(value)
+		elif hasattr(value, "__len__"):
 			self.set_array(value)
 		elif self.info.type == _ait_d["enum"]:
 			print("setting choices to ", self.info.enums)
-			self.pv.setChoices(self.info.enums)
-			self.pv.setIndex(value)
+			pvenum = pvapy.PvEnum()
+			#self.pv.setChoices(self.info.enums)
+			#self.pv.setIndex(value)
+			#pvenum.setChoices(self.info.enums)
+			#pvenum.setIndex(value)
+			#self.pv.set(pvenum)
+			print("AAA",type(self.pv))
+			self.pv.setValue(pvapy.PvEnum(self.info.enums, value))
 		else:
-			self.pv.set(value)
+			#self.pv.set(value)
+			self.pv.set({"value":value})
+			#self.pv.setAlarm(pvapy.Alarm(1,1,"asdf"))
+			self.pv["alarm.severity"] = dbValue.severity
+			self.pv["alarm.status"] = dbValue.alarm
 
 
 class SimplePVP4P(pcaspy.driver.SimplePV):
@@ -92,8 +111,12 @@ class SimplePVP4P(pcaspy.driver.SimplePV):
 			#return NTScalar('s')
 			return NTScalar('aB')
 		elif t_num == _ait_d["int"]:
+			if count > 1:
+				return NTScalar('ai')
 			return NTScalar('i')
 		elif t_num == _ait_d["short"]:
+			if count > 1:
+				return NTScalar('ai')
 			return NTScalar('i')
 		elif t_num == _ait_d["enum"]:
 			return NTScalar('i')
