@@ -42,11 +42,7 @@ class SimplePVBase(pcaspy.driver.SimplePV):
 			self.pv = self.create_nt_int()
 		elif t_num == _ait_d["enum"]:
 			self.pv = self.create_nt_enum()
-			#self.pv = self.create_pv_enum()
-			#self.pv = self.create_nt_int()
 		
-		#server.addRecord(self.name, self.pv, cb)
-		#self.add_record(cb)
 		self.add_record()
 	
 	def __init__(self, name, info):
@@ -55,10 +51,7 @@ class SimplePVBase(pcaspy.driver.SimplePV):
 	def updateValue(self, dbValue):
 		super().updateValue(dbValue)
 		value = dbValue.value
-		#if type(value)!=str and hasattr(value, "__len__"):
-		#if self.info.type!=_ait_d["str"] and hasattr(value, "__len__"):
 		if self.info.type==_ait_d["str"]:
-			#self.pv.set(value)
 			self.set_pv(value)
 		elif hasattr(value, "__len__"):
 			self.set_array(value)
@@ -164,8 +157,3 @@ except:
 	print("p4p not found, trying pvapy")
 	use_pvapy()
 
-#class Driver(pcaspy.driver.Driver):
-#	pass
-
-#class SimpleServer(pcaspy.driver.SimpleServer):
-#	pass
