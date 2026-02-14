@@ -9,7 +9,7 @@ try:
 	from p4p.server import StaticProvider
 	from p4p.server import Server as ServerP4P
 	from p4p.server.thread import SharedPV
-	from p4p.nt import NTScalar
+	from p4p.nt import NTScalar, NTEnum
 except:
 	None
 
@@ -42,6 +42,8 @@ class SimplePVBase(pcaspy.driver.SimplePV):
 			self.pv = self.create_nt_int()
 		elif t_num == _ait_d["enum"]:
 			self.pv = self.create_nt_enum()
+			#self.pv = self.create_pv_enum()
+			#self.pv = self.create_nt_int()
 		
 		#server.addRecord(self.name, self.pv, cb)
 		#self.add_record(cb)
@@ -60,14 +62,15 @@ class SimplePVBase(pcaspy.driver.SimplePV):
 			self.set_pv(value)
 		elif hasattr(value, "__len__"):
 			self.set_array(value)
-		elif 0==1 and self.info.type == _ait_d["enum"]:
+		elif 1==1 and self.info.type == _ait_d["enum"]:
 			print("setting choices to ", self.info.enums)
-			pvenum = self.create_pv_enum()
-			pvenum.setChoices(self.info.enums)
-			pvenum.setIndex(value)
+			#pvenum = self.create_pv_enum()
+			#pvenum.setChoices(self.info.enums)
+			#pvenum.setIndex(value)
 			#self.pv.set(pvenum)
+			self.set_pv_enum(self.info.enums, value)
 			print("AAA",type(self.pv))
-			self.pv.setValue(pvenum)
+			#self.pv.setValue(pvenum)
 		else:
 			#self.pv.set(value)
 			#self.pv.set({"value":value})
@@ -104,6 +107,11 @@ class SimplePVPVAPY(SimplePVBase):
 	def set_pv(self, value):
 		#self.pv.set({"value":value})
 		self.pv.set(value)
+	def set_pv_enum(self, choices, value):
+		pvenum = self.create_pv_enum()
+		pvenum.setChoices(self.info.enums)
+		pvenum.setIndex(value)
+		self.pv.setValue(pvenum)
 
 
 class SimplePVP4P(SimplePVBase):
@@ -112,7 +120,8 @@ class SimplePVP4P(SimplePVBase):
 			value = [ord(e) for e in value]
 		self.set_pv(value)
 	def create_nt_float(self):
-		return NTScalar('f')
+		#return NTScalar('f')
+		return NTScalar('d')
 	def create_pv_str(self):
 		return NTScalar('s')
 	def create_nt_int(self):
@@ -120,9 +129,11 @@ class SimplePVP4P(SimplePVBase):
 	def create_pv_char_array(self):
 		return NTScalar('aB')
 	def create_pv_float_array(self):
-		return NTScalar('af')
+		#return NTScalar('af')
+		return NTScalar('ad')
 	def create_nt_enum(self):
-		return NTScalar('i')
+		#return NTScalar('i')
+		return NTEnum()
 	def create_pv_enum(self):
 		return NTScalar('i')
 	def add_record(self):
@@ -144,6 +155,10 @@ class SimplePVP4P(SimplePVBase):
 	def set_pv(self, value):
 		wrapped_value = self.pv.wrap(value)
 		self.shared_pv.post(wrapped_value)
+	def set_pv_enum(self, choices, value):
+		wrapped_value = self.pv.wrap({"choices": choices, "index": value})
+		self.shared_pv.post(wrapped_value)
+
 
 
 		
