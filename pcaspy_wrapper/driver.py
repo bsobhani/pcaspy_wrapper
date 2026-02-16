@@ -126,7 +126,10 @@ class SimplePVP4P(SimplePVBase):
 			driver = pcaspy.driver.manager.driver.get(self.info.port)
 			driver.write(self.get_reason(), value)
 			pv.post(op.value())
-			op.done()
+			if not self.info.asyn:
+				op.done()
+			else:
+				self.op = op
 		self.shared_pv = SharedPV(initial=initial)
 		self.shared_pv._handler.put = on_put
 		provider.add(self.name, self.shared_pv)
@@ -136,6 +139,10 @@ class SimplePVP4P(SimplePVBase):
 	def set_pv_enum(self, choices, value):
 		wrapped_value = self.pv.wrap({"choices": choices, "index": value})
 		self.shared_pv.post(wrapped_value)
+	def endAsyncWrite(self, p):
+		if hasattr(self, "op"):
+			self.op.done()
+		return super().endAsyncWrite(p)
 
 
 def use_pvapy():
