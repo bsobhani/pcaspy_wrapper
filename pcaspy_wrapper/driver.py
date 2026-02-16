@@ -121,6 +121,8 @@ class SimplePVP4P(SimplePVBase):
 			initial = self.pv.wrap(0)
 		def on_put(pv, op):
 			value = op.value()['value']
+			if self.info.type == _ait_d["enum"]:
+				value = value["index"]
 			driver = pcaspy.driver.manager.driver.get(self.info.port)
 			driver.write(self.get_reason(), value)
 			pv.post(op.value())
