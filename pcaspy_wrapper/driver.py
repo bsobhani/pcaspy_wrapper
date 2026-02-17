@@ -37,8 +37,12 @@ class SimplePVBase(pcaspy.driver.SimplePV):
 			else:
 				self.pv = create_nt_int()
 		elif t_num == _ait_d["int"]:
+			if count > 1:
+				self.pv = self.create_pv_int_array()
 			self.pv = self.create_nt_int()
 		elif t_num == _ait_d["short"]:
+			if count > 1:
+				self.pv = self.create_pv_int_array()
 			self.pv = self.create_nt_int()
 		elif t_num == _ait_d["enum"]:
 			self.pv = self.create_nt_enum()
@@ -114,6 +118,8 @@ class SimplePVP4P(SimplePVBase):
 	def create_pv_char_array(self):
 		return NTScalar('aB')
 	def create_pv_float_array(self):
+		return NTScalar('ad')
+	def create_pv_int_array(self):
 		return NTScalar('ad')
 	def create_nt_enum(self):
 		return NTEnum()
