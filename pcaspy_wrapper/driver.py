@@ -92,6 +92,13 @@ class SimplePVPVAPY(SimplePVBase):
 		pvenum.setIndex(value)
 		self.pv.setValue(pvenum)
 
+def is_block_true(op):
+	d = op.pvRequest().todict()
+	if "record" in d.keys():
+		if "_options" in d["record"].keys():
+			if "block" in d["record"]["_options"].keys():
+				return d["record"]["_options"]["block"]
+	return False
 
 class SimplePVP4P(SimplePVBase):
 	def set_array(self, value):
@@ -126,7 +133,7 @@ class SimplePVP4P(SimplePVBase):
 			driver = pcaspy.driver.manager.driver.get(self.info.port)
 			driver.write(self.get_reason(), value)
 			pv.post(op.value())
-			if not self.info.asyn:
+			if not self.info.asyn or not is_block_true(op):
 				op.done()
 			else:
 				self.op = op
