@@ -104,10 +104,14 @@ def is_block_true(op):
 				return d["record"]["_options"]["block"]
 	return False
 
+append_null_to_str = True
+
 class SimplePVP4P(SimplePVBase):
 	def set_array(self, value):
 		if type(value)==str:
 			value = [ord(e) for e in value]
+			if append_null_to_str:
+				value.append(0)
 		self.set_pv(value)
 	def create_nt_float(self):
 		return NTScalar('d')
