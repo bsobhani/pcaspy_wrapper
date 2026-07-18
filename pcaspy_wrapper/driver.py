@@ -5,13 +5,13 @@ try:
 	import pvapy
 except:
 	None
-try:
-	from p4p.server import StaticProvider
-	from p4p.server import Server as ServerP4P
-	from p4p.server.thread import SharedPV
-	from p4p.nt import NTScalar, NTEnum
-except:
-	None
+#try:
+from p4p.server import StaticProvider
+from p4p.server import Server as ServerP4P
+from p4p.server.thread import SharedPV
+from p4p.nt import NTScalar, NTEnum
+#except:
+#	None
 
 
 
@@ -25,7 +25,10 @@ class SimplePVBase(pcaspy.driver.SimplePV):
 		t_num = self.info.type
 		count = self.info.count
 		if t_num == _ait_d["str"]:
-			self.pv = self.create_pv_str()
+			if count > 1:
+				self.pv = self.create_pv_str_array()
+			else:
+				self.pv = self.create_pv_str()
 		elif t_num == _ait_d["float"]:
 			if count > 1:
 				self.pv = self.create_pv_float_array()
@@ -39,7 +42,8 @@ class SimplePVBase(pcaspy.driver.SimplePV):
 		elif t_num == _ait_d["int"]:
 			if count > 1:
 				self.pv = self.create_pv_int_array()
-			self.pv = self.create_nt_int()
+			else:
+				self.pv = self.create_nt_int()
 		elif t_num == _ait_d["short"]:
 			if count > 1:
 				self.pv = self.create_pv_int_array()
@@ -117,6 +121,8 @@ class SimplePVP4P(SimplePVBase):
 		return NTScalar('d')
 	def create_pv_str(self):
 		return NTScalar('s')
+	def create_pv_str_array(self):
+		return NTScalar('as')
 	def create_nt_int(self):
 		return NTScalar('i')
 	def create_pv_char_array(self):
@@ -130,10 +136,10 @@ class SimplePVP4P(SimplePVBase):
 	def create_pv_enum(self):
 		return NTScalar('i')
 	def add_record(self):
-		if self.info.type == _ait_d["str"]:
-			initial = self.pv.wrap("")
-		elif self.info.count > 1:
+		if self.info.count > 1:
 			initial = self.pv.wrap([])
+		elif self.info.type == _ait_d["str"]:
+			initial = self.pv.wrap("")
 		else:
 			initial = self.pv.wrap(0)
 		def on_put(pv, op):
@@ -163,6 +169,7 @@ class SimplePVP4P(SimplePVBase):
 
 
 def use_pvapy():
+	print("attempting to use pvapy")
 	global server
 	server = pvaccess.PvaServer()
 	pcaspy.driver.SimplePV = SimplePVPVAPY
@@ -170,6 +177,7 @@ def use_pvapy():
 
 provider = None
 def use_p4p():
+	print("attempting to use p4p")
 	global server
 	global provider
 	provider = StaticProvider('simple')
@@ -177,9 +185,10 @@ def use_p4p():
 	pcaspy.driver.SimplePV = SimplePVP4P
 	print("using p4p")
 
-try:
-	use_p4p()
-except:
-	print("p4p not found, trying pvapy")
-	use_pvapy()
+#try:
+#	use_p4p()
+#except:
+#	print("p4p not found, trying pvapy")
+#	use_pvapy()
+use_p4p()
 
