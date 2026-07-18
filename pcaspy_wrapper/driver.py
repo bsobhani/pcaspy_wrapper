@@ -47,7 +47,8 @@ class SimplePVBase(pcaspy.driver.SimplePV):
 		elif t_num == _ait_d["short"]:
 			if count > 1:
 				self.pv = self.create_pv_int_array()
-			self.pv = self.create_nt_int()
+			else:
+				self.pv = self.create_nt_int()
 		elif t_num == _ait_d["enum"]:
 			self.pv = self.create_nt_enum()
 		
