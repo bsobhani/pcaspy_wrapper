@@ -137,12 +137,16 @@ class SimplePVP4P(SimplePVBase):
 	def create_pv_enum(self):
 		return NTScalar('i')
 	def add_record(self):
-		if self.info.count > 1:
-			initial = self.pv.wrap([])
-		elif self.info.type == _ait_d["str"]:
-			initial = self.pv.wrap("")
-		else:
-			initial = self.pv.wrap(0)
+		#initial values already determined in pcaspy so this may not be needed
+		#if self.info.count > 1:
+		#	initial = self.pv.wrap([])
+		#elif self.info.type == _ait_d["str"]:
+		#	initial = self.pv.wrap("")
+		#else:
+		#	initial = self.pv.wrap(0)
+		initial = self.pv.wrap(self.info.value)
+		if self.info.type == _ait_d["enum"]:
+			initial = self.pv.wrap({"choices": self.info.enums, "index": self.info.value})
 		def on_put(pv, op):
 			value = op.value()['value']
 			if self.info.type == _ait_d["enum"]:
