@@ -38,7 +38,7 @@ class SimplePVBase(pcaspy.driver.SimplePV):
 			if count > 1:
 				self.pv = self.create_pv_char_array()
 			else:
-				self.pv = create_nt_int()
+				self.pv = self.create_nt_int()
 		elif t_num == _ait_d["int"]:
 			if count > 1:
 				self.pv = self.create_pv_int_array()
